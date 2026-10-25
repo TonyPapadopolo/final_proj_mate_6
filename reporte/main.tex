@@ -1,0 +1,63 @@
+% ======================================================================
+% Reporte MAP: Serie de Fourier Truncada y FFT (Matematica 6)
+% Cada integrante escribe SOLO su seccion para evitar conflictos en git.
+% Las figuras se generan desde los notebooks en reporte/figuras/
+% ======================================================================
+\documentclass[11pt,letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{hyperref}
+\graphicspath{{figuras/}}
+
+\title{MAP: Serie de Fourier Truncada y FFT}
+\author{Christian \and Tony \and Claudia}
+\date{Noviembre de 2026}
+
+\begin{document}
+\maketitle
+
+\section{Introduccion}
+% TODO (Claudia): objetivo del proyecto y estructura del reporte.
+
+\section{Parte 1: Series de Fourier} % Christian
+\subsection{Interfaz, coeficientes y serie truncada (inciso 1)}
+% TODO
+\subsection{Documentacion para $N=3,5,10$ (inciso 2)}
+% TODO
+\subsection{Respuestas justificadas (inciso 3)}
+% TODO: a) convergencia, b) utilidad del ICE, c) iteraciones
+\subsection{Funcion generada por IA (incisos 4 a 6)}
+% TODO: prompt y respuesta (captura), N=15, grafica
+
+\section{Parte 2: FFT y filtros de imagen} % Tony
+\subsection{Implementacion de la FFT de Cooley-Tukey}
+% TODO: explicar fft_recursiva, FFT 2D por filas y columnas, pruebas contra NumPy
+\subsection{Convencion de frecuencia de corte}
+% TODO: radio normalizado r en [0,1] desde el centro; esquina = 1
+\subsection{Filtro pasa bajas (inciso 1)}
+% TODO: figuras pasa bajas fc = 0.22, 0.15, 0.96 y justificacion
+\subsection{Filtro pasa altas (inciso 2)}
+% TODO: figuras pasa altas fc = 0.23, 0.11, 0.91 y justificacion
+\subsection{Blur Detection (inciso 3)}
+% TODO: metodo, umbral, resultados
+
+\section{Parte 2: CNN y comparacion} % Claudia
+\subsection{Modelo preentrenado (inciso 4a)}
+% TODO
+\subsection{Ruido, limpieza con FFT y con CNN (incisos 4b a 4d)}
+% TODO
+\subsection{Comparacion (inciso 5)}
+% TODO
+
+\section{Uso de herramientas de IA}
+% TODO: cada consulta con captura del prompt y la respuesta, y como se uso
+
+\section{Conclusiones}
+% TODO
+
+\end{document}

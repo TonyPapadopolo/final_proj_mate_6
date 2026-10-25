@@ -1,0 +1,10 @@
+numpy
+matplotlib
+pillow
+scipy
+pandas
+scikit-image
+ipykernel
+nbformat
+nbconvert
+# Claudia: agregar aqui la libreria de la CNN que elija (torch / tensorflow / opencv-python)
