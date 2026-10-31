@@ -1,0 +1,5 @@
+DnCNN superó a la mejor FFT probada por PSNR en **4 de 4 imágenes**, con 0 empates; por SSIM, superó a la mejor FFT de esa métrica en **4 de 4 imágenes**, con 0 empates.
+
+El filtro pasa bajas reduce componentes de alta frecuencia que contienen ruido, pero también puede eliminar bordes y texturas. DnCNN utiliza características aprendidas durante su entrenamiento para estimar el ruido y puede conservar mejor esos detalles. Esto explica por qué puede superar al filtro clásico, sin garantizarlo para todas las imágenes.
+
+La mejor FFT se seleccionó usando la referencia original y por separado para cada métrica. Esta selección es retrospectiva entre los tres cortes probados y no es una regla para imágenes nuevas. Las figuras muestran la FFT elegida por PSNR, que puede diferir de la elegida por SSIM.

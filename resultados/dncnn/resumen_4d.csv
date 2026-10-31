@@ -1,0 +1,5 @@
+Imagen,Ancho,Alto,Dimensiones conservadas,Entrada
+img1,256,256,True,img1_ruido_gaussiano.npy
+img2,256,256,True,img2_ruido_gaussiano.npy
+img3,256,256,True,img3_ruido_gaussiano.npy
+img4,256,256,True,img4_ruido_gaussiano.npy
