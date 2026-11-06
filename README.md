@@ -14,7 +14,8 @@ Proyecto en grupo (Christian, Tony, Claudia). Entrega: **ZIP en GES** con `.tex`
 src/fft_nucleo.py        FFT recursiva 1D/2D, filtros, Blur Detection (unica fuente del codigo)
 notebooks/               un notebook por integrante (evita conflictos de git en los .ipynb)
 herramientas/            unir_notebooks.py: genera notebooks/MAP_final.ipynb para la entrega
-imagenes/                imagenes del proyecto (si esta vacia se usa una sintetica de respaldo)
+imagenes/Imagenes de prueba/   imagenes del proyecto (si esta vacia se usa una sintetica de respaldo)
+imagenes/Promts/                capturas de los prompts de cada integrante
 reporte/main.tex         reporte en LaTeX, una seccion por persona
 reporte/figuras/         figuras generadas por los notebooks (savefig dpi=200)
 ```

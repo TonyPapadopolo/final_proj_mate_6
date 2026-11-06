@@ -1,0 +1,4 @@
+Las imagenes del proyecto (png, jpg, bmp, tif) estan en la subcarpeta "Imagenes de prueba".
+Los notebooks las cargan automaticamente desde ahi, las pasan a gris y las ajustan a 256x256.
+Si esa subcarpeta esta vacia, se usa una imagen sintetica de respaldo.
+La subcarpeta "Promts" guarda las capturas de las consultas a la IA de cada integrante.

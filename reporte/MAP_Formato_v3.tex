@@ -1,0 +1,1626 @@
+\documentclass[11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Algunos Paquetes Necesarios
+\usepackage{fancyhdr, graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[spanish]{babel}
+\usepackage{babelbib}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amssymb}
+\usepackage{amsmath, amsthm, amsfonts}
+\usepackage[table]{xcolor}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{multicol}
+\decimalpoint
+\usepackage{colortbl}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{hyperref}
+
+\definecolor{pastelblue}{RGB}{173,216,230}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{cyan!50!black},
+    stringstyle=\color{orange!85!black},
+    commentstyle=\color{teal!60!black},
+    morecomment=[l][\color{magenta!60!black}]{\#},
+    backgroundcolor=\color{white},
+    showstringspaces=false,
+    tabsize=4,
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!45!black,
+    urlcolor=blue!45!black
+}
+
+\setlength{\emergencystretch}{2em}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Rutas de las imágenes
+% Las rutas se interpretan desde la raiz del proyecto de Overleaf.
+% Todo el material grafico vive dentro de imagenes/:
+%   imagenes/Imagenes de prueba/  imagenes originales del proyecto
+%   imagenes/Figuras/Fourier/     figuras de la Parte 1
+%   imagenes/Figuras/FFT/         figuras de los incisos 1, 2 y 3
+%   imagenes/Figuras/CNN/         figuras de los incisos 4 y 5
+%   imagenes/Promts/              capturas de prompts y respuestas de IA
+\graphicspath{{imagenes/}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Capturas de prompts y respuestas
+% \capturacnn{ruta}{descripcion}: inserta la imagen si existe;
+% si todavia no existe, muestra un espacio reservado.
+\newcommand{\capturacnn}[2]{%
+  \par\medskip\noindent
+  \IfFileExists{#1}{%
+    \begin{center}
+    \includegraphics[
+        width=\linewidth,
+        height=.28\textheight,
+        keepaspectratio
+    ]{#1}
+    \end{center}%
+  }{%
+    \fbox{%
+      \parbox[c][.15\textheight][c]{
+        \dimexpr\linewidth-2\fboxsep-2\fboxrule\relax
+      }{%
+        \centering
+        \textbf{#2}
+        \par\smallskip
+        Espacio para la captura real
+        \par\smallskip
+        {\small\path{#1}}
+      }%
+    }
+  }%
+  \par\smallskip
+  \noindent{\small\textit{#2}}
+  \par
+}
+
+% Evidencia de IA de Maria Claudia: \evidenciacnn{inciso}{numero}{texto}
+% usa imagenes/Figuras/CNN/evidencia_N.jpg (prompt a la izquierda, respuesta a la derecha)
+\newcommand{\evidenciacnn}[3]{%
+  \subsubsection*{Registro de la consulta a IA: inciso #1}
+  \IfFileExists{imagenes/Figuras/CNN/evidencia_#2.jpg}{%
+    \begin{center}
+    \includegraphics[width=\linewidth]{imagenes/Figuras/CNN/evidencia_#2.jpg}
+    \end{center}\vspace{-2mm}%
+    {\small\textit{Prompt (izquierda) y respuesta de la IA (derecha) del inciso #1.}}\par
+  }{%
+    \fbox{\parbox[c][.12\textheight][c]{.95\linewidth}{\centering Espacio para la captura del inciso #1}}\par
+  }
+  \paragraph{Uso de la asistencia.} #3
+}
+
+% Evidencia de IA de Antonio (un par de capturas por tema, lado a lado)
+% usa imagenes/Promts/Tony/<clave>_prompt.png y <clave>_respuesta.png
+\newcommand{\capturalado}[2]{%
+  \parbox[t]{.485\linewidth}{\centering
+  \IfFileExists{#1}{\includegraphics[width=\linewidth,height=.2\textheight,keepaspectratio]{#1}}{%
+    \fbox{\parbox[c][.1\textheight][c]{.8\linewidth}{\centering\small Espacio para la captura real\par\path{#1}}}}\par
+  {\small\textit{#2}}}%
+}
+\newcommand{\evidenciaantonio}[3]{%
+  \paragraph{#1.}
+  \noindent\capturalado{imagenes/Promts/Tony/#2_prompt.png}{Prompt}\hfill
+  \capturalado{imagenes/Promts/Tony/#2_respuesta.png}{Respuesta de la IA}\par\smallskip
+  #3\par\medskip
+}
+
+% Hoja de capturas de la conversacion de Christian (apendice)
+\newcommand{\hojachristian}[1]{%
+  \begin{center}\includegraphics[width=\linewidth,height=.88\textheight,keepaspectratio]{imagenes/Figuras/Apendice/hoja_#1.jpg}\end{center}%
+}
+
+% Interfaz del notebook: dos capturas (superior e inferior) apiladas, una pagina por caso
+% \interfazpar{carpeta}{N}{etiqueta}{leyenda}  usa imagenes/interfaz/<carpeta>/superior_N_<N>.png e inferior_N_<N>.png
+\newcommand{\interfazpar}[4]{%
+  \begin{figure}[p]
+  \centering
+  \includegraphics[width=.58\linewidth,height=.54\textheight,keepaspectratio]{imagenes/interfaz/#1/superior_N_#2.png}\par\smallskip
+  \includegraphics[width=.58\linewidth,height=.4\textheight,keepaspectratio]{imagenes/interfaz/#1/inferior_N_#2.png}
+  \caption{#4}
+  \label{#3}
+  \end{figure}
+}
+
+% Figura simple a ancho completo
+\newcommand{\figura}[3]{%
+  \begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=.76\linewidth]{#1}
+  \caption{#3}
+  \label{#2}
+  \end{figure}
+}
+
+% Imagen que puede faltar (por ejemplo una captura de pantalla pendiente)
+\newcommand{\figuraopcional}[4]{%
+  \begin{figure}[H]
+  \centering
+  \IfFileExists{#1}{%
+    \includegraphics[width=#4\linewidth]{#1}%
+  }{%
+    \fbox{\parbox[c][.18\textheight][c]{.9\linewidth}{\centering
+      \textbf{Espacio para la captura real}\par\smallskip
+      {\small\path{#1}}}}%
+  }
+  \caption{#3}
+  \label{#2}
+  \end{figure}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Logo de la universidad
+\newcommand{\logouniversidad}{%
+  \begin{center}
+  \IfFileExists{UGlogo_HR.png}{%
+    \includegraphics[width=.3\textwidth]{UGlogo_HR.png}
+  }{%
+    \IfFileExists{UGlogo_HR.pdf}{%
+      \includegraphics[width=.3\textwidth]{UGlogo_HR.pdf}
+    }{%
+      \IfFileExists{UGlogo_HR.jpg}{%
+        \includegraphics[width=.3\textwidth]{UGlogo_HR.jpg}
+      }{%
+        \fbox{%
+          \parbox[c][1.3cm][c]{.3\textwidth}{%
+            \centering
+            \small
+            Logo de la universidad\\
+            \texttt{UGlogo\_HR}
+          }%
+        }
+      }
+    }
+  }
+  \end{center}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Figuras de resultados
+\newcommand{\panelcnn}[3]{%
+  \includegraphics[width=\linewidth]{imagenes/Figuras/CNN/#1/#1_img#2_#3.jpg}%
+}
+
+% Cuatro comparaciones de dos paneles.
+\newcommand{\galeriacnn}[3]{%
+  \begin{figure}[!htbp]
+  \centering
+
+  \begin{minipage}{.485\linewidth}
+    \centering
+    \panelcnn{#1}{1}{#2}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{.485\linewidth}
+    \centering
+    \panelcnn{#1}{2}{#2}
+  \end{minipage}
+
+  \par\medskip
+
+  \begin{minipage}{.485\linewidth}
+    \centering
+    \panelcnn{#1}{3}{#2}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{.485\linewidth}
+    \centering
+    \panelcnn{#1}{4}{#2}
+  \end{minipage}
+
+  \caption{#3}
+  \label{fig:cnn-#1}
+  \end{figure}
+}
+
+% Comparaciones con varios paneles a ancho completo.
+\newcommand{\comparacionescnn}[3]{%
+  \begin{figure}[!htbp]
+  \centering
+
+  \panelcnn{#1}{1}{#2}
+  \par\smallskip
+  \panelcnn{#1}{2}{#2}
+  \par\smallskip
+  \panelcnn{#1}{3}{#2}
+  \par\smallskip
+  \panelcnn{#1}{4}{#2}
+
+  \caption{#3}
+  \label{fig:cnn-#1}
+  \end{figure}
+}
+
+% Restauracion con DnCNN: cuatro imagenes en una figura.
+\newcommand{\comparacionesdncnn}{%
+  \begin{figure}[!htbp]
+  \centering
+  \panelcnn{4d}{1}{dncnn_comparacion}\par\smallskip
+  \panelcnn{4d}{2}{dncnn_comparacion}\par\smallskip
+  \panelcnn{4d}{3}{dncnn_comparacion}\par\smallskip
+  \panelcnn{4d}{4}{dncnn_comparacion}
+  \caption{Restauración con DnCNN de img1 a img4 (una por fila). Cada fila muestra la referencia, la entrada con ruido de 4b y la salida restaurada, con el mismo orden de paneles y la misma escala de intensidades.}
+  \label{fig:cnn-4d}
+  \end{figure}
+}
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Titulo
+{\color{white}.}
+\vspace{3 in}
+
+\begin{center}
+\Huge
+\textsc{MAP $-$ FFT y DFT}
+\end{center}
+
+\vspace{3 in}
+\hrule height 1.5pt
+\vspace{0.1 in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Datos Grupo
+{\large
+\noindent\textbf{Integrantes:}
+
+\begin{itemize}[nolistsep]
+    \item María Claudia Lainfiesta Herrera $-$ $24000149$.
+    \item Antonio Papadopolo Castellanos $-$ $24002045$.
+    \item Christian Alejandro Vasquez Paz $-$ $24001777$.
+\end{itemize}
+}
+
+\vspace{0.2 in}
+\hrule height 1.5pt
+
+\newpage
+\vspace{0.1 in}
+
+
+
+\begin{center}
+\Large
+\textbf{Guía Práctica}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INICIO DEL APARTADO DE CHRISTIAN ALEJANDRO VASQUEZ PAZ
+\subsection*{Parte 1 - Series de Fourier}
+
+\noindent
+
+\paragraph{Convenciones.}
+Las dos funciones del enunciado tienen período $T=4$ y se integran en
+$[-2,2]$, de modo que $\omega_0=2\pi/T=\pi/2$. La serie truncada al armónico $N$ es
+\begin{equation}
+ S_N(t)=a_0+\sum_{n=1}^{N}\bigl[a_n\cos(n\omega_0 t)+b_n\sin(n\omega_0 t)\bigr],
+ \label{eq:sn}
+\end{equation}
+con $a_0=\frac1T\int f\,dt$, $a_n=\frac2T\int f\cos(n\omega_0t)\,dt$ y
+$b_n=\frac2T\int f\sin(n\omega_0t)\,dt$. El término constante es $a_0$, sin dividirlo otra vez entre dos.
+La expresión (\ref{eq:sn}) tiene $2N+1$ términos: $a_0$, los $N$ cosenos y los $N$ senos
+(algunos coeficientes valen cero). La energía y la integral cuadrada del error son
+\begin{equation}
+ E_f=\int_{-2}^{2}f^2(t)\,dt,\qquad
+ \mathrm{ICE}(N)=E_f-\Bigl\{a_0^2T+\frac T2\sum_{n=1}^{N}(a_n^2+b_n^2)\Bigr\},
+\end{equation}
+y el criterio de aceptación es $\mathrm{ICE}(N)\le0.02\,E_f$.
+
+\paragraph{Coeficientes en forma cerrada.}
+Al integrar a mano se obtienen, con $k=n\pi/2$:
+\begin{align*}
+ f_1:&\quad a_0=\tfrac12,\quad a_n=\frac{2\sin(n\pi/2)}{n\pi},\quad b_n=0,\\
+ f_2:&\quad a_0=1,\quad a_n=\frac{4\sin(n\pi/2)}{n\pi},\quad
+ b_n=\frac{\sin k}{k^2}-\frac{\cos k}{k},
+\end{align*}
+con energías $E_{f_1}=2$ y $E_{f_2}=26/3$. El código calcula los coeficientes por integración numérica
+(\texttt{scipy.integrate.quad}, separando los puntos de discontinuidad $-1$, $0$ y $1$) y las fórmulas anteriores se usaron
+para verificarlos hasta $n=11$ con tolerancia $10^{-9}$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 1. Interfaz gráfica}
+
+\paragraph{Instrucción.}
+Implementar una interfaz gráfica que permita seleccionar la función ($f_1$ o $f_2$) y que muestre
+el período, los coeficientes de la serie, la gráfica aproximada con $2N+1$ términos, el valor de $N$
+y la ecuación de la serie trigonométrica.
+
+\paragraph{Respuesta y explicación del código.}
+La interfaz se construyó con \texttt{ipywidgets} dentro del notebook, y se actualiza sola al mover cualquier
+control (\texttt{widgets.interactive\_output}). Cada dato pedido en el enunciado tiene su propio elemento:
+\begin{itemize}[nolistsep]
+ \item \textbf{Selección de función:} menú desplegable con $f_1$ (pulso rectangular), $f_2$ (rampa por tramos)
+ y la señal propuesta con IA del inciso 4.
+ \item \textbf{Período:} tarjeta con $T=4$ y la frecuencia angular $\omega_0=\pi/2$.
+ \item \textbf{Valor de $N$:} deslizador de $0$ a $30$ armónicos. El botón <<Calcular $N$ mínimo (2\,\%)>>
+ busca el menor $N$ con $\mathrm{ICE}(N)\le0.02E_f$ y el botón <<Caso IA: $N=15$>> prepara el inciso 5.
+ \item \textbf{Coeficientes:} $a_0$ y una tabla con $a_n$ y $b_n$ para $n=1,\dots,N$.
+ \item \textbf{Gráfica:} señal original (extendida periódicamente, de 1 a 5 períodos) frente a la serie
+ truncada; incluye opción para mostrar u ocultar la cuadrícula.
+ \item \textbf{Ecuación:} expresión $S_N(t)$ con los coeficientes redondeados a seis decimales
+ (se omiten términos menores que $10^{-10}$ solo al escribirla; la gráfica usa los valores sin redondear).
+ \item \textbf{Calidad de la aproximación:} tarjeta con energía, ICE, porcentaje $\mathrm{ICE}/E_f$ y si cumple el 2\,\%.
+\end{itemize}
+Las funciones \texttt{calcular\_a0}, \texttt{calcular\_an} y \texttt{calcular\_bn} integran los coeficientes;
+\texttt{serie\_fourier} suma la serie truncada; \texttt{calcular\_energia} y \texttt{calcular\_ice} dan $E_f$ y la ICE,
+y \texttt{encontrar\_n} busca el menor $N$ que cumple el 2\,\%:
+
+\begin{lstlisting}
+def calcular_an(funcion, n):
+    def integrando(t):
+        return funcion(t) * np.cos(n * omega_0 * t)
+    integral, error_estimado = quad(integrando, -2, 2, points=[-1, 0, 1])
+    return (2 / T) * integral
+
+def calcular_ice(funcion, N):
+    energia = calcular_energia(funcion)
+    a0 = calcular_a0(funcion)
+    suma = sum(calcular_an(funcion, n)**2 + calcular_bn(funcion, n)**2
+               for n in range(1, N + 1))
+    return energia - (T * a0**2 + (T / 2) * suma)
+\end{lstlisting}
+
+Las capturas de la interfaz funcionando, con todos los datos que pide el enunciado, se muestran en el inciso 2
+(figuras \ref{fig:int-f1-3} a \ref{fig:int-fia-15}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 2. Documentación para $N=3,5,10$}
+
+\paragraph{Instrucción.}
+Documentar paso a paso, con todos los datos generados por la interfaz, los valores $N=3,5,10$ para cada función.
+
+\paragraph{Respuesta.}
+Cada una de las siguientes figuras es la interfaz del notebook para un valor de $N$, en dos capturas (parte superior arriba y
+parte inferior abajo). En ellas se ven, para cada caso: la función seleccionada, el período $T=4$ y $\omega_0=\pi/2$, el valor
+de $N$, la energía y la ICE con su porcentaje, la gráfica de la señal original frente a la serie truncada, la ecuación
+$S_N(t)$ con sus $2N+1$ posiciones y la tabla de coeficientes $a_0$, $a_n$ y $b_n$. La tabla \ref{tab:resumen6} resume la
+energía y la ICE de los seis casos, y las figuras \ref{fig:int-f1-3} a \ref{fig:int-f1-10} corresponden a $f_1$ y
+\ref{fig:int-f2-3} a \ref{fig:int-f2-10} a $f_2$.
+
+\begin{table}[!htbp]
+\centering
+\caption{Energía, ICE y cumplimiento del criterio $\mathrm{ICE}\le0.02E_f$ en los seis casos.}
+\label{tab:resumen6}
+\begin{tabular}{llrrrrl}
+\hline
+\rowcolor{pastelblue}
+Función & $N$ & $2N+1$ & $E_f$ & ICE & ICE$/E_f$ (\%) & ¿Cumple 2\,\%?\\
+\hline
+f1 & 3 & 7 & 2.000000 & 0.099367 & 4.9684 & No\\
+f1 & 5 & 11 & 2.000000 & 0.066944 & 3.3472 & No\\
+f1 & 10 & 21 & 2.000000 & 0.040395 & 2.0198 & No\\
+\hline
+f2 & 3 & 7 & 8.666667 & 0.528926 & 6.1030 & No\\
+f2 & 5 & 11 & 8.666667 & 0.348049 & 4.0159 & No\\
+f2 & 10 & 21 & 8.666667 & 0.198378 & 2.2890 & No\\
+\hline
+\end{tabular}
+\end{table}
+
+\interfazpar{f1}{3}{fig:int-f1-3}{Interfaz para $f_1$ con $N=3$.}
+\interfazpar{f1}{5}{fig:int-f1-5}{Interfaz para $f_1$ con $N=5$.}
+\interfazpar{f1}{10}{fig:int-f1-10}{Interfaz para $f_1$ con $N=10$.}
+\interfazpar{f2}{3}{fig:int-f2-3}{Interfaz para $f_2$ con $N=3$.}
+\interfazpar{f2}{5}{fig:int-f2-5}{Interfaz para $f_2$ con $N=5$.}
+\interfazpar{f2}{10}{fig:int-f2-10}{Interfaz para $f_2$ con $N=10$.}
+\FloatBarrier
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 3. Preguntas de análisis}
+
+\paragraph{a) ¿En cuál de las dos funciones converge más rápido la serie?}
+En los casos estudiados, \textbf{$f_1$ presenta menor error relativo}: para $N=3,5,10$ obtiene
+4.9684\,\%, 3.3472\,\% y 2.0198\,\%, frente a 6.1030\,\%, 4.0159\,\% y 2.2890\,\% de $f_2$.
+Con el mismo número de armónicos, $f_1$ ofrece entonces una mejor aproximación según el criterio energético relativo.
+Esto es coherente con los saltos: $f_1$ tiene dos saltos de magnitud $1$, mientras que $f_2$ tiene saltos de
+magnitudes $1$ y $3$.
+
+No obstante, \textbf{ambas alcanzan el umbral del 2\,\% por primera vez en $N=11$}, así que no debe concluirse que
+$f_1$ necesite menos armónicos para ese umbral particular. Los coeficientes de ambas decaen como $1/n$, y la energía del
+error decae como $1/N$; la diferencia observada es de constantes, no de orden de convergencia.
+
+\paragraph{b) ¿Es útil calcular la ICE para ambas funciones?}
+Sí. Permite cuantificar el error cuadrático sobre un período y elegir $N$ con un criterio reproducible:
+\[
+ \mathrm{ICE}(N)=\int_{-2}^{2}[f(t)-S_N(t)]^2dt=E_f-Ta_0^2-\frac T2\sum_{n=1}^N(a_n^2+b_n^2),
+\]
+igualdad que se debe a la ortogonalidad de las funciones trigonométricas. Como $E_{f_1}=2$ y $E_{f_2}=26/3$ son distintas,
+conviene comparar $\mathrm{ICE}/E_f$ y no el error absoluto.
+
+La ICE, sin embargo, no mide el error máximo en cada punto. Cerca de los saltos persisten las oscilaciones de Gibbs:
+al aumentar $N$ la zona afectada se estrecha, pero el sobreimpulso relativo no desaparece, y en el salto la serie converge
+al promedio de los límites laterales. Cumplir el 2\,\% de energía no significa estar a menos del 2\,\% de la función en
+todos los instantes.
+
+\paragraph{c) ¿Con cuántas iteraciones se obtiene una mejor aproximación?}
+Interpretamos <<iteraciones>> como el armónico máximo $N$ de la suma. Entre los tres casos pedidos, $N=10$ da la menor ICE
+en cada función, pero todavía no cumple el 2\,\%. El mínimo que lo cumple es $N=11$ para ambas (figura \ref{fig:ice}):
+
+\begin{table}[!htbp]
+\centering
+\caption{Error relativo $\mathrm{ICE}/E_f$ (\%) alrededor del primer $N$ que cumple el criterio.}
+\label{tab:n11}
+\begin{tabular}{lrr}
+\hline
+\rowcolor{pastelblue}
+Función & $N=10$ & $N=11$\\
+\hline
+$f_1$ & 2.0198 & 1.6848\\
+$f_2$ & 2.2890 & 1.9795\\
+\hline
+\end{tabular}
+\end{table}
+
+Agregar un armónico reduce la ICE en $\frac T2(a_n^2+b_n^2)\ge0$, por lo que la ICE nunca aumenta; puede quedar igual cuando los
+nuevos coeficientes son cero, como ocurre con los armónicos pares de $f_1$. Ningún $N$ finito reproduce exactamente las
+discontinuidades.
+
+\figura{imagenes/Figuras/Fourier/ice_vs_N.jpg}{fig:ice}{
+ Error relativo $\mathrm{ICE}(N)/E_f$ para $f_1$ y $f_2$. La línea roja es el criterio del 2\,\% y la vertical punteada marca $N=11$.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Incisos 4 a 6. Señal periódica generada con IA}
+
+\paragraph{Instrucciones.}
+(4) Pedir a un LLM el código de una función periódica original y no trivial; (5) analizarla con la interfaz,
+documentar su serie para $N=15$ y juzgar si la aproximación es adecuada; (6) graficar la señal y su aproximación.
+
+\paragraph{Señal propuesta.}
+Con asistencia de IA se propuso una señal sintética que combina tres componentes sinusoidales y una conmutación brusca
+(es un ejemplo matemático, no un modelo validado de un instrumento real). En el intervalo base $[-2,2)$:
+\begin{equation}
+ g(t)=\sin\frac{\pi t}{2}+0.45\sin\frac{3\pi t}{2}+0.20\cos\frac{5\pi t}{2}+0.35\,q(t),\qquad
+ q(t)=\begin{cases}-1,&-2\le t<0,\\ +1,&0\le t<2,\end{cases}
+\end{equation}
+extendida con período $T=4$. Las sinusoides son los armónicos $1$, $3$ y $5$, y $q$ introduce saltos en $t=0$ y en los
+extremos del período, de modo que se necesitan infinitos armónicos para representarla exactamente. Las consultas
+al asistente se documentan al final de esta parte (página \pageref{anexo:ia}).
+
+\begin{lstlisting}
+def funcion_ia(t):
+    t = np.asarray(t, dtype=float)
+    cuadrada = np.where(t < 0, -1.0, 1.0)
+    return (np.sin(omega_0 * t)
+            + 0.45 * np.sin(3 * omega_0 * t)
+            + 0.20 * np.cos(5 * omega_0 * t)
+            + 0.35 * cuadrada)
+\end{lstlisting}
+
+\paragraph{Verificación independiente de los coeficientes.}
+Por linealidad y por la serie de la onda cuadrada, $a_0=0$, $a_n=0.20$ solo si $n=5$ (y cero en los demás), y
+\[
+ b_n=\mathbf 1_{n=1}+0.45\,\mathbf 1_{n=3}+\begin{cases}\dfrac{1.4}{n\pi},&n\text{ impar},\\[2mm]0,&n\text{ par},\end{cases}
+\]
+donde $\mathbf 1_{\cdot}$ vale $1$ si se cumple la condición y $0$ en otro caso. Estas expresiones coinciden con los
+coeficientes calculados por integración (con tolerancia $10^{-9}$) para $n=1,\dots,15$. Es una comprobación independiente
+de la implementación.
+
+\paragraph{Serie truncada para $N=15$ en la interfaz.}
+La figura \ref{fig:int-fia-15} muestra la interfaz con la señal propuesta por la IA y $N=15$: período $T=4$, $\omega_0=\pi/2$,
+$2N+1=31$ posiciones, energía e ICE, gráfica de la señal original y de la aproximación, ecuación $S_{15}(t)$ y tabla de
+coeficientes ($a_0=0$, $a_5=0.20$ y los $b_n$ de los armónicos impares).
+
+\interfazpar{fIA}{15}{fig:int-fia-15}{Interfaz para la señal propuesta con IA con $N=15$.}
+\FloatBarrier
+
+\paragraph{¿Es adecuada la aproximación con $N=15$?}
+Sí, \textbf{según el criterio de energía}. La energía es $E_g\approx5.024916$ y $\mathrm{ICE}(15)\approx0.012396$, es decir
+$\mathrm{ICE}/E_g\approx0.2467$\,\%, muy por debajo del 2\,\%. De hecho el criterio ya se cumple desde $N=5$
+(0.6528\,\%). La energía total tiene el valor analítico
+\[
+ E_g=2(1+0.45^2+0.20^2)+4(0.35)^2+\frac{16(0.35)}{\pi}\Bigl(1+\frac{0.45}{3}\Bigr)\approx 5.024916,
+\]
+que coincide con la integración numérica y no es la suma simple de las energías de los términos, porque la onda cuadrada
+comparte armónicos con los senos de frecuencias $1$ y $3$ y aparecen términos cruzados.
+
+La conclusión es energética y global, no afirma precisión uniforme en cada instante. Como una suma finita de senos y
+cosenos es continua, cerca de $t=0$ y de los extremos del período quedan oscilaciones y una transición suave en lugar del
+salto (figura \ref{fig:ia}, panel inferior).
+
+\figura{imagenes/Figuras/Fourier/ia_N15.jpg}{fig:ia}{
+ Señal propuesta con IA y su serie truncada con $N=15$ sobre dos períodos (arriba) y detalle cerca del salto en $t=0$ (abajo).}
+
+\clearpage
+\subsubsection*{Registro de las consultas a IA (Parte 1)}
+\label{anexo:ia}
+
+Las siguientes hojas reúnen las 51 capturas de la conversación continua con el asistente Codex que se utilizó para desarrollar la
+Parte 1: se avanzó paso a paso con las funciones $f_1$ y $f_2$, la integración numérica de los coeficientes, la energía, la ICE,
+la interfaz y la señal periódica propuesta. Están en orden (capturas 1 a 51) y reducidas para el reporte; las capturas originales
+están en \path{imagenes/Promts/Christian/}. Los valores numéricos del reporte provienen de la ejecución del notebook, no de cifras propuestas por la IA.
+
+\hojachristian{1}
+\clearpage
+\hojachristian{2}
+\clearpage
+\hojachristian{3}
+
+% FIN DEL APARTADO DE CHRISTIAN ALEJANDRO VASQUEZ PAZ
+
+\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INICIO DEL APARTADO DE ANTONIO PAPADOPOLO CASTELLANOS
+\subsection*{Parte 2 - FFT y filtros de imagen avanzados}
+
+\noindent
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Implementación del algoritmo FFT de Cooley-Tukey}
+
+\paragraph{Instrucción.}
+Implementar el algoritmo FFT recursivo del enunciado y usarlo en los incisos 1, 2 y 3.
+
+\paragraph{Respuesta y explicación del código.}
+El algoritmo se implementó sin usar \texttt{np.fft.fft} ni \texttt{np.fft.fft2} para calcular transformadas.
+Sigue el pseudocódigo del enunciado: caso base $N=1$; transformadas recursivas de los índices pares e impares;
+y combinación con $T=x_{\text{impar}}[k]\,e^{-2\pi ik/N}$,
+\begin{equation}
+ X[k]=X_{\text{par}}[k]+T,\qquad X[k+N/2]=X_{\text{par}}[k]-T,\qquad k=0,\dots,\tfrac N2-1.
+\end{equation}
+Al dividir el problema a la mitad en cada nivel, el costo pasa de $O(N^2)$ de la DFT directa a $O(N\log N)$,
+y por la misma razón la longitud debe ser potencia de dos; el código lanza un error claro en otro caso.
+
+\begin{lstlisting}
+def fft_recursiva(x):
+    x = np.asarray(x, dtype=complex)
+    N = x.shape[-1]
+    if not es_potencia_de_2(N):
+        raise ValueError(f"La longitud debe ser potencia de 2, se recibio N={N}")
+    if N == 1:                              # caso base
+        return x
+    x_par = fft_recursiva(x[..., 0::2])     # indices pares
+    x_impar = fft_recursiva(x[..., 1::2])   # indices impares
+    k = np.arange(N // 2)
+    T = x_impar * np.exp(-2j * np.pi * k / N)
+    return np.concatenate([x_par + T, x_par - T], axis=-1)
+\end{lstlisting}
+
+La inversa usa la identidad $\mathrm{IFFT}(X)=\overline{\mathrm{FFT}(\overline{X})}/N$. Para imágenes se aplica la FFT
+a todas las filas y luego a todas las columnas (FFT 2D separable), y la inversa 2D es análoga. El único uso de
+\texttt{np.fft} en el proyecto es \texttt{fftshift}, que solo reordena los cuadrantes para llevar la frecuencia cero al
+centro del espectro, sin calcular ninguna transformada.
+
+\paragraph{Validación.}
+La FFT propia se comparó con \texttt{np.fft} para longitudes $1,2,8,64,1024$ y para imágenes de
+$64\times64$, $32\times128$ y $256\times256$; la inversa devuelve la señal original, y la DFT directa
+(la fórmula $\mathbf X[k]=\sum_n x[n]e^{-2\pi ikn/N}$ del enunciado) coincide con la FFT. Todas las pruebas pasaron.
+
+\paragraph{Preparación de las imágenes.}
+Cada imagen se convierte a escala de grises, se redimensiona a $256\times256$ píxeles con interpolación Lanczos y se
+normaliza a $[0,1]$. Las dimensiones deben ser potencias de dos porque la FFT recursiva lo exige; $256=2^8$ conserva
+el detalle suficiente con un costo moderado.
+
+\figura{imagenes/Figuras/FFT/originales_256.jpg}{fig:originales}{
+ Las cuatro imágenes del proyecto ya preparadas ($256\times256$, escala de grises).}
+
+\paragraph{Convención de frecuencia de corte.}
+Se usa el radio normalizado $r$ medido desde el centro del espectro centrado: $r=0$ es la frecuencia cero y
+$r=1$ es la esquina, la frecuencia más alta. Para una imagen de $H\times W$,
+\begin{equation}
+ r(u,v)=\frac{1}{\sqrt2}\sqrt{\Bigl(\frac{u-H/2}{H/2}\Bigr)^2+\Bigl(\frac{v-W/2}{W/2}\Bigr)^2}.
+\end{equation}
+Las máscaras ideales son
+\begin{equation}
+ H_{\text{bajas}}(u,v)=\begin{cases}1,&r\le f_c,\\0,&r>f_c,\end{cases}\qquad
+ H_{\text{altas}}(u,v)=1-H_{\text{bajas}}(u,v).
+\end{equation}
+El filtrado calcula $F=\operatorname{centrar}(\mathrm{FFT2}(\text{img}))$, multiplica por la máscara y reconstruye
+$g=\operatorname{Re}\bigl(\mathrm{IFFT2}(\operatorname{descentrar}(F\cdot H))\bigr)$. La parte imaginaria es solo error
+numérico. En el pasa bajas el resultado se recorta a $[0,1]$; en el pasa altas no se recorta, porque el resultado tiene
+media cero y valores negativos.
+
+\figura{imagenes/Figuras/FFT/mascaras.jpg}{fig:mascaras}{
+ Máscara pasa bajas ($f_c=0.22$), máscara pasa altas ($f_c=0.23$) y el radio normalizado $r$ (de 0 en el centro a 1 en la esquina).}
+
+
+
+\FloatBarrier
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 1. Filtro pasa bajas ($f_c=0.22,\ 0.15,\ 0.96$)}
+
+\paragraph{Instrucción.}
+Aplicar el algoritmo a las imágenes con un filtro pasa bajas con $f_c=0.22$, $0.15$ y $0.96$, y explicar la diferencia entre las
+imágenes originales y las generadas, justificando la respuesta con el análisis del filtro.
+
+\paragraph{Respuesta y explicación del código.}
+Se aplicó el filtro pasa bajas ideal a las cuatro imágenes con la FFT propia.
+
+\begin{lstlisting}
+#pasa bajas ideal con la FFT propia
+for fc in [0.22, 0.15, 0.96]:
+    filtrada = filtro_pasabajas(img, fc, tipo="ideal")
+\end{lstlisting}
+
+La figura \ref{fig:bajas} muestra los resultados para las cuatro imágenes y la figura \ref{fig:bajasdet} detalla img1 con la diferencia y el espectro filtrado (escala logarítmica); el comportamiento es el mismo en las demás. La tabla \ref{tab:bajas} da los números.
+La energía conservada es $\sum|F\cdot H|^2/\sum|F|^2$, y el PSNR se calcula contra la imagen original
+($\mathrm{PSNR}=10\log_{10}(1/\mathrm{MSE})$).
+
+\begin{table}[!htbp]
+\centering
+\caption{Pasa bajas ideal: porcentaje de puntos del espectro que se conservan, energía conservada y PSNR contra la original.}
+\label{tab:bajas}
+\begin{tabular}{llrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & $f_c$ & Puntos (\%) & Energía (\%) & PSNR (dB)\\
+\hline
+img1 & 0.22 & 7.59 & 98.41 & 23.44\\
+img1 & 0.15 & 3.53 & 97.40 & 21.28\\
+img1 & 0.96 & 99.66 & 100.00 & 71.98\\
+\hline
+img2 & 0.22 & 7.59 & 99.16 & 25.68\\
+img2 & 0.15 & 3.53 & 98.70 & 23.76\\
+img2 & 0.96 & 99.66 & 100.00 & 64.41\\
+\hline
+img3 & 0.22 & 7.59 & 99.35 & 26.55\\
+img3 & 0.15 & 3.53 & 98.89 & 24.22\\
+img3 & 0.96 & 99.66 & 100.00 & 69.41\\
+\hline
+img4 & 0.22 & 7.59 & 98.53 & 25.21\\
+img4 & 0.15 & 3.53 & 97.72 & 23.31\\
+img4 & 0.96 & 99.66 & 100.00 & 68.82\\
+\hline
+\end{tabular}
+\end{table}
+
+\figura{imagenes/Figuras/FFT/bajas_resumen.jpg}{fig:bajas}{Pasa bajas aplicado a las cuatro imágenes (una por fila): original y resultados con $f_c=0.22$, $0.15$ y $0.96$.}
+\figura{imagenes/Figuras/FFT/img1_pasa_bajas.jpg}{fig:bajasdet}{Detalle para img1: por fila $f_c=0.22$, $0.15$ y $0.96$; columnas: original, filtrada, $|\text{original}-\text{filtrada}|$ y espectro filtrado (escala logarítmica).}
+
+\paragraph{¿Cuál es la diferencia entre las imágenes originales y las generadas?}
+Las imágenes generadas con $f_c=0.22$ y $f_c=0.15$ son versiones suavizadas de las originales: se conservan las formas
+generales y las zonas de brillo uniforme, pero desaparecen los contornos nítidos y los detalles finos, y junto a los
+bordes aparecen ondulaciones. Mientras menor es la frecuencia de corte, mayor es la pérdida: con $0.15$ el resultado se
+ve más borroso que con $0.22$ (PSNR de 21.3 a 24.2 dB frente a 23.4 a 26.5 dB). En cambio, con $f_c=0.96$ la imagen generada
+es prácticamente idéntica a la original (PSNR de 64 a 72 dB según la imagen), porque casi no se descarta contenido.
+
+\paragraph{Justificación con el filtro pasa bajas.}
+La máscara vale 1 dentro del radio $f_c$ y 0 fuera. Las frecuencias bajas describen variaciones lentas de intensidad,
+como fondos y superficies, mientras que los bordes y las texturas son transiciones abruptas que necesitan muchas frecuencias
+altas para representarse. Al eliminarlas, cada borde se reparte en una transición gradual, que se percibe como desenfoque;
+el mapa de diferencia confirma que el error se concentra en los contornos.
+
+Las cifras muestran por qué la imagen sigue siendo reconocible: con $f_c=0.22$ se conserva solo el 7.6\,\% de los puntos del
+espectro y con $f_c=0.15$ apenas el 3.5\,\%, pero esos puntos retienen entre 98.4\,\% y 99.4\,\% de la energía (0.22) y entre
+97.4\,\% y 98.9\,\% (0.15), porque en una imagen natural la energía se concentra en las bajas frecuencias. Con $f_c=0.96$ solo
+se descarta el 0.3\,\% del espectro (las esquinas) y la energía conservada es prácticamente 100\,\%.
+
+Las ondulaciones cercanas a los bordes se deben a que el corte de la máscara es abrupto. Multiplicar por una máscara de borde
+nítido en frecuencia equivale a convolucionar con una función tipo $\operatorname{sinc}$ en el dominio espacial, cuyos
+lóbulos laterales generan oscilaciones junto a cada discontinuidad. Es el fenómeno de Gibbs que ya aparece al truncar una serie de
+Fourier: aproximar una discontinuidad con un número finito de armónicos produce sobreimpulsos cerca del salto.
+
+
+
+\FloatBarrier
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 2. Filtro pasa altas ($f_c=0.23,\ 0.11,\ 0.91$)}
+
+\paragraph{Instrucción.}
+Aplicar el algoritmo a las imágenes con un filtro pasa altas con $f_c=0.23$, $0.11$ y $0.91$, y explicar la diferencia entre las
+imágenes originales y las generadas, justificando la respuesta con el análisis del filtro.
+
+\paragraph{Respuesta y explicación del código.}
+El pasa altas usa la máscara complementaria $1-H_{\text{bajas}}$, que elimina la componente de frecuencia cero y deja
+pasar lo que está fuera del radio $f_c$.
+
+\begin{lstlisting}
+#pasa altas ideal con la FFT propia
+for fc in [0.23, 0.11, 0.91]:
+    filtrada = filtro_pasaaltas(img, fc, tipo="ideal")
+\end{lstlisting}
+
+Como el resultado tiene media cero, para mostrarlo se escala a $[0,1]$ (el gris medio corresponde al valor cero); esa
+normalización es solo visual. No se calcula PSNR, porque el resultado no debe parecerse a la imagen original. Las
+figuras \ref{fig:altas} y \ref{fig:altasdet} y la tabla \ref{tab:altas} reúnen los resultados.
+
+\begin{table}[!htbp]
+\centering
+\caption{Pasa altas ideal: puntos del espectro conservados, energía conservada y desviación estándar de la imagen resultante (escala 0 a 1).}
+\label{tab:altas}
+\begin{tabular}{llrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & $f_c$ & Puntos (\%) & Energía (\%) & Desv. estándar\\
+\hline
+img1 & 0.23 & 91.69 & 1.4762 & 0.0656\\
+img1 & 0.11 & 98.11 & 3.7700 & 0.1048\\
+img1 & 0.91 & 1.70 & 0.0002 & 0.0007\\
+\hline
+img2 & 0.23 & 91.69 & 0.7930 & 0.0506\\
+img2 & 0.11 & 98.11 & 1.7732 & 0.0757\\
+img2 & 0.91 & 1.70 & 0.0005 & 0.0013\\
+\hline
+img3 & 0.23 & 91.69 & 0.6021 & 0.0454\\
+img3 & 0.11 & 98.11 & 1.6797 & 0.0759\\
+img3 & 0.91 & 1.70 & 0.0002 & 0.0008\\
+\hline
+img4 & 0.23 & 91.69 & 1.3931 & 0.0534\\
+img4 & 0.11 & 98.11 & 3.1678 & 0.0805\\
+img4 & 0.91 & 1.70 & 0.0004 & 0.0009\\
+\hline
+\end{tabular}
+\end{table}
+
+\figura{imagenes/Figuras/FFT/altas_resumen.jpg}{fig:altas}{Pasa altas aplicado a las cuatro imágenes (una por fila): original y resultados con $f_c=0.23$, $0.11$ y $0.91$ (resultado escalado solo para visualizarlo).}
+\figura{imagenes/Figuras/FFT/img1_pasa_altas.jpg}{fig:altasdet}{Detalle para img1: por fila $f_c=0.23$, $0.11$ y $0.91$; columnas: original, filtrada (escalada), diferencia y espectro filtrado.}
+
+\paragraph{¿Cuál es la diferencia entre las imágenes originales y las generadas?}
+Las imágenes generadas ya no se parecen a las originales: el resultado es un mapa de bordes y detalles finos sobre un fondo gris
+uniforme. Las zonas suaves, como el cielo o las superficies lisas, desaparecen y solo quedan los contornos de los objetos. Con
+$f_c=0.11$ se conservan más frecuencias intermedias y los bordes tienen más estructura; con $f_c=0.23$ los contornos son más
+finos. Con $f_c=0.91$ solo sobreviven las esquinas del espectro y se obtiene un patrón fino casi uniforme, sin contenido
+reconocible de la escena y con amplitud casi nula (desviación estándar cercana a $0.001$ en la escala de 0 a 1).
+
+\paragraph{Justificación con el filtro pasa altas.}
+La máscara vale 0 dentro del radio $f_c$ y 1 fuera. Como el centro del espectro contiene la frecuencia cero, que representa
+el brillo promedio, ese valor se elimina y la imagen resultante tiene media cero, con valores positivos y negativos (por eso
+no se recorta a $[0,1]$). Como las dos máscaras suman 1, la imagen original es la suma de su versión pasa bajas y su versión
+pasa altas con el mismo $f_c$.
+
+La energía que sobrevive es pequeña: entre 0.6\,\% y 1.5\,\% con $f_c=0.23$, entre 1.7\,\% y 3.8\,\% con $f_c=0.11$ y prácticamente
+0\,\% con $f_c=0.91$. En una imagen natural la energía se concentra en las bajas frecuencias, aunque las altas contienen la
+información de los bordes. Al bajar $f_c$ el filtro deja pasar más frecuencias (98.1\,\% de los puntos con $f_c=0.11$) y por
+tanto más energía y más estructura; al subirlo a $0.91$ queda el 1.7\,\% de los puntos, las frecuencias más altas, y ya no hay
+forma de reconocer los objetos. También se observan ondulaciones alrededor de los contornos, por el corte abrupto de la
+máscara ideal, igual que en el pasa bajas.
+
+
+
+\FloatBarrier
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 3. Blur Detection}
+
+\paragraph{Instrucción.}
+Modificar la implementación para que pueda realizar \textit{Blur Detection} y aplicarla a las imágenes proporcionadas.
+
+\paragraph{Respuesta y explicación del código.}
+Una imagen nítida tiene bordes, es decir, energía en altas frecuencias; una desenfocada la pierde. Se reutiliza la FFT 2D propia
+y se mide la fracción de la energía espectral, sin la componente DC, que cae fuera del radio $r=0.1$:
+\begin{equation}
+ S=\frac{\sum_{r(u,v)>0.1}|F(u,v)|^2}{\sum_{(u,v)\ne\mathrm{DC}}|F(u,v)|^2}\in[0,1].
+\end{equation}
+La imagen se declara \textbf{desenfocada} si $S<\tau$ con $\tau=0.02$. Como comprobación independiente se calcula también la
+varianza del Laplaciano discreto de cuatro vecinos, método clásico de nitidez (en las tablas se reporta multiplicada por
+$255^2$).
+
+\begin{lstlisting}
+def puntaje_blur_fft(img, fc_alta=0.1):
+    potencia = np.abs(centrar_espectro(fft2_recursiva(img))) ** 2
+    r = radio_normalizado(img.shape)
+    potencia[img.shape[0] // 2, img.shape[1] // 2] = 0   # se ignora la DC
+    return float(potencia[r > fc_alta].sum() / potencia.sum())
+
+def detectar_desenfoque(img, umbral=0.02, fc_alta=0.1):
+    puntaje = puntaje_blur_fft(img, fc_alta)
+    return {"puntaje_fft": puntaje, "laplaciano": varianza_laplaciano(img),
+            "desenfocada": puntaje < umbral}
+\end{lstlisting}
+
+\paragraph{Validación con desenfoque artificial.}
+Para comprobar que el puntaje responde al desenfoque, cada imagen se desenfocó con un pasa bajas gaussiano
+$H(u,v)=e^{-r^2/(2f_c^2)}$ con $f_c=0.30$ (leve), $0.15$ (medio) y $0.05$ (fuerte). Las tablas \ref{tab:blur} y \ref{tab:lap}
+y las figuras \ref{fig:blurniveles} y \ref{fig:blurpuntajes} muestran los resultados.
+
+\begin{table}[!htbp]
+\centering
+\caption{Puntaje $S$ (energía en altas frecuencias) para cada nivel de desenfoque. Umbral $\tau=0.02$.}
+\label{tab:blur}
+\begin{tabular}{lrrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & Original & Leve (0.30) & Medio (0.15) & Fuerte (0.05)\\
+\hline
+img1 & 0.1419 & 0.0911 & 0.0433 & 0.0004\\
+img2 & 0.1485 & 0.0898 & 0.0406 & 0.0003\\
+img3 & 0.1106 & 0.0732 & 0.0364 & 0.0004\\
+img4 & 0.1612 & 0.1002 & 0.0463 & 0.0004\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+\centering
+\caption{Varianza del Laplaciano ($\times255^2$) para los mismos niveles.}
+\label{tab:lap}
+\begin{tabular}{lrrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & Original & Leve (0.30) & Medio (0.15) & Fuerte (0.05)\\
+\hline
+img1 & 1598.8 & 304.7 & 47.3 & 1.4\\
+img2 & 1228.8 & 170.6 & 23.5 & 0.7\\
+img3 & 880.1 & 151.3 & 26.4 & 0.8\\
+img4 & 1266.6 & 200.4 & 26.1 & 0.5\\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Resultados.}
+Las cuatro imágenes originales tienen $S$ entre $0.11$ y $0.16$ y se clasifican como \textbf{nítidas}. En todas, el puntaje
+decrece estrictamente al aumentar el desenfoque, y la varianza del Laplaciano muestra el mismo orden, lo que respalda la
+medida. Con el desenfoque fuerte ($S\approx0.0004$) las cuatro imágenes quedan por debajo del umbral y se detectan como
+\textbf{desenfocadas}.
+
+\paragraph{Alcance y limitaciones.}
+Con $\tau=0.02$ los desenfoques leve y medio siguen por encima del umbral ($S$ entre $0.036$ y $0.100$) y se clasifican como
+nítidos: el detector separa bien la imagen nítida de la muy desenfocada, pero no es sensible a un desenfoque moderado. El
+umbral es empírico y el puntaje depende del contenido de la imagen (una escena con pocas texturas tiene menos energía en
+altas frecuencias aun estando enfocada), por lo que $\tau$ debe recalibrarse si se cambian las imágenes. No se pretende que
+$\tau=0.02$ sea un valor universal.
+
+\figura{imagenes/Figuras/FFT/blur_puntajes.jpg}{fig:blurpuntajes}{
+ Puntaje de Blur Detection frente al nivel de desenfoque (escala logarítmica). La línea roja es el umbral $\tau=0.02$.}
+
+\figura{imagenes/Figuras/FFT/blur_niveles_todas.jpg}{fig:blurniveles}{Cada imagen original (fila) y sus versiones con desenfoque leve, medio y fuerte, con su puntaje FFT y la varianza del Laplaciano.}
+
+
+
+\FloatBarrier
+\subsubsection*{Registro de las consultas a IA (FFT e incisos 1 a 3)}
+
+La asistencia se utilizó para auditar la implementación de la FFT y de los filtros frente a las instrucciones, aclarar decisiones de diseño
+(tamaño $256\times256$, umbral del Blur Detection, uso del PSNR) e integrar el notebook final. El código de la FFT y de los filtros es el que se
+entrega en el notebook, y las cifras de todas las tablas provienen de la ejecución del notebook. Las capturas siguen el orden de la conversación (10 consultas).
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_1.jpg}
+\caption{Consulta 1. Auditoría de la implementación de FFT y filtros frente a las instrucciones, con los problemas encontrados por orden de importancia.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_2.jpg}
+\caption{Consulta 2. Decisiones sobre el filtro radial, el redimensionamiento a $256\times256$ y la deformación de proporción, justificadas con el costo de la FFT recursiva y el fenómeno de Gibbs.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_3.jpg}
+\caption{Consultas 3 y 4. Significado del PSNR (útil en el pasa bajas, no en el pasa altas) y retiro de esa columna de la tabla del pasa altas; el PSNR tampoco se usa en Blur Detection.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_4.jpg}
+\caption{Consulta 5. Se mantiene el umbral $\tau=0.02$ y se revisa el cronograma del proyecto y lo que necesita la integrante C.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_5.jpg}
+\caption{Consulta 6. Verificación de la implementación de la Parte 1 y tabla de estado por integrante y tarea.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_6.jpg}
+\caption{Consulta 7. Corrección de inconsistencias en el notebook de la Parte 2, \texttt{unir\_notebooks.py} y \texttt{requirements.txt}.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_7.jpg}
+\caption{Consultas 8 y 9. Notebook único autónomo y condiciones para ejecutarlo desde el ZIP de entrega.}
+\end{figure}
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\linewidth,height=.8\textheight,keepaspectratio]{imagenes/Figuras/Tony/consulta_8.jpg}
+\caption{Consulta 10. Extracción de las capturas del chat de Christian y organización de las rutas de las imágenes de prueba.}
+\end{figure}
+\FloatBarrier
+
+% FIN DEL APARTADO DE ANTONIO PAPADOPOLO CASTELLANOS
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INICIO DEL APARTADO DE MARIA CLAUDIA LAINFIESTA HERRERA
+
+\subsection*{
+    Parte 2 - Redes neuronales convolucionales y comparación
+}
+
+\noindent
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 4. Filtro de imagen basado en CNN}
+
+\paragraph{Instrucción.}
+
+Investigar filtros de imagen basados en redes neuronales
+convolucionales (CNN) y utilizar un modelo preentrenado para
+una tarea de restauración, sin necesidad de entrenar una red
+desde cero. En esta implementación se eligió la eliminación
+de ruido, también llamada \textit{denoising}.
+
+\paragraph{Preparación común de las imágenes.}
+
+El trabajo se realizó en la sección de CNN de
+\path{MAP_final.ipynb}.
+Se cargaron \path{img1.jpeg}, \path{img2.png},
+\path{img3.jpg} y \path{img4.jpg} desde la carpeta
+\path{imagenes/Imagenes de prueba/}.
+
+La función \texttt{cargar\_imagen} del núcleo compartido
+convierte cada imagen a escala de grises, la redimensiona a
+$256\times256$ píxeles con interpolación Lanczos y normaliza
+sus intensidades al intervalo $[0,1]$.
+
+Las dimensiones son potencias de dos, como requiere la FFT
+recursiva. Todos los métodos se evalúan contra estas
+referencias ya preparadas, no contra los archivos originales
+a color o con sus dimensiones de origen.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{
+    Inciso 4a. Implementación y aplicación del modelo preentrenado
+}
+
+\paragraph{Instrucción.}
+
+Agregar la implementación del modelo CNN y utilizarla para
+las imágenes adjuntas en el proyecto.
+
+\paragraph{Respuesta y explicación del código.}
+
+Se seleccionó \textbf{DnCNN}, variante
+\texttt{dncnn\_gray\_blind}, con pesos publicados en KAIR por
+Kai Zhang. El fundamento de DnCNN es estimar el ruido
+mediante aprendizaje residual y obtener la restauración
+restando esa estimación de la entrada; las referencias del
+artículo y del código están al final.
+
+La implementación usada contiene 20 capas convolucionales
+con núcleos $3\times3$: una primera capa de un canal a
+64 canales, 18 capas intermedias de 64 canales y una última
+capa de salida de un canal. Se aplica ReLU después de las
+primeras 19 convoluciones.
+
+Se reproduce la configuración de los pesos seleccionados;
+en esta clase no se agregan capas de normalización por lotes.
+
+Los pesos se almacenan en
+\path{herramientas/model_zoo/dncnn_gray_blind.pth}.
+Si el archivo no existe, el código crea la carpeta y lo
+descarga de la publicación v1.0 de KAIR.
+
+Se usa \texttt{load\_state\_dict} con
+\texttt{strict=True} para comprobar que las capas coincidan
+con los pesos. Después, la red se coloca en CPU o GPU,
+según disponibilidad, se activa \texttt{eval()} y se
+deshabilitan los gradientes. No se realiza entrenamiento
+ni actualización de los pesos.
+
+La función \texttt{aplicar\_cnn} verifica que la entrada
+sea una matriz válida en $[0,1]$, la convierte en un tensor
+con forma $(1,1,256,256)$ y ejecuta el modelo con
+\texttt{torch.inference\_mode()}.
+
+La red devuelve
+
+\begin{equation}
+    \widehat{x}
+    =
+    \operatorname{clip}
+    \bigl(y-R_{\theta}(y),0,1\bigr),
+\end{equation}
+
+donde $y$ es la imagen de entrada y $R_{\theta}(y)$
+representa el ruido estimado por las capas convolucionales.
+Se verifica la forma y la validez de la salida; el recorte
+limita las intensidades al intervalo permitido.
+
+En este inciso se procesan las imágenes cargadas, todavía
+sin el ruido artificial de 4b. La comparación visual permite
+observar el efecto de DnCNN, pero no prueba por sí sola una
+mejora: no se conoce una referencia más limpia que la imagen
+original preparada.
+
+La evaluación controlada corresponde a los incisos
+siguientes. El notebook también muestra la versión de
+PyTorch, el dispositivo, la huella SHA-256 de los pesos y
+una tabla de comprobación de dimensiones.
+
+\galeriacnn{4a}{dncnn_comparacion}{
+    Aplicación de DnCNN a las cuatro imágenes preparadas
+    sin agregar ruido artificial. En cada par, la referencia
+    en gris aparece a la izquierda y la salida de DnCNN
+    a la derecha.
+}
+
+\evidenciacnn{4a}{1}{
+    La asistencia se utilizó para organizar la carga del
+    modelo preentrenado, su aplicación a las imágenes y las
+    comprobaciones de dimensiones. Las capturas deben
+    corresponder a la consulta y a la respuesta reales que
+    se utilizaron durante este desarrollo.
+}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 4b. Incorporación de ruido artificial}
+
+\paragraph{Instrucción.}
+
+Tomar una imagen original y agregarle ruido artificialmente.
+Para ampliar la comparación, se repitió el procedimiento
+con las cuatro imágenes del proyecto.
+
+\paragraph{Respuesta y explicación del código.}
+
+Se generó ruido gaussiano con \texttt{default\_rng} de
+NumPy, media cero, desviación estándar
+$\sigma=25/255\approx0.09804$ y semilla 42.
+
+El procedimiento se expresa como
+
+\begin{equation}
+    n_{ij}\sim\mathcal{N}(0,\sigma^2),
+    \qquad
+    y_{ij}
+    =
+    \operatorname{clip}(x_{ij}+n_{ij},0,1).
+\end{equation}
+
+Aquí $x$ es la referencia en gris y $y$ es la entrada
+ruidosa común para FFT y DnCNN.
+
+La semilla se reinicia dentro del ciclo de cada imagen;
+por ello, las cuatro imágenes de igual tamaño reciben el
+mismo arreglo de ruido antes del recorte. El recorte impide
+intensidades negativas o mayores que uno, pero modifica la
+distribución del ruido cerca de los extremos del intervalo.
+
+Se crean copias independientes de las referencias y se
+comprueba que el resultado conserve las dimensiones y
+contenga valores finitos.
+
+Los diccionarios \texttt{originales\_4b} e
+\texttt{imagenes\_ruido} conservan las referencias y las
+entradas degradadas. También se guardan archivos como
+\path{img1_gris.npy} e \path{img1_ruido_gaussiano.npy}
+en \path{resultados/ruido_gaussiano/}.
+
+Los incisos 4c, 4d y 5 leen estos mismos archivos: no
+generan realizaciones distintas de ruido para cada método.
+
+Visualmente, el ruido introduce granulado en las zonas
+uniformes y alrededor de los contornos. El PSNR de estas
+entradas se encuentra entre 20.28 y 20.70 dB, y su promedio
+es 20.41 dB.
+
+Estos valores sirven como punto de comparación: una
+restauración útil debe acercarse más a la referencia que
+la entrada ruidosa.
+
+\begin{lstlisting}
+#ruido reproducible por imagen y recorte al rango valido
+rng = np.random.default_rng(SEMILLA)
+ruido = rng.normal(0, SIGMA, original.shape).astype(np.float32)
+imagen_ruidosa = np.clip(original + ruido, 0, 1)
+\end{lstlisting}
+
+\galeriacnn{4b}{ruido_gaussiano_comparacion}{
+    Referencias en escala de grises y sus versiones con
+    ruido gaussiano de intensidad $25/255$. Se utiliza
+    la misma escala de visualización en ambos paneles.
+}
+
+\evidenciacnn{4b}{2}{
+    La asistencia se utilizó para preparar ruido
+    reproducible, conservar las referencias y guardar las
+    entradas comunes del experimento. El código final
+    fija la semilla y evita cambiar el ruido entre los
+    métodos.
+}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 4c. Limpieza mediante filtros de FFT}
+
+\paragraph{Instrucción.}
+
+Aplicar los filtros de FFT implementados para intentar
+limpiar la imagen con ruido.
+
+\paragraph{Respuesta y explicación del código.}
+
+Se importó \texttt{filtro\_pasabajas} de
+\path{src/fft_nucleo.py}, sin modificar el núcleo
+compartido. Se utilizaron filtros pasa bajas ideales con
+frecuencias de corte $f_c=0.15$, $0.22$ y $0.96$.
+
+En este inciso se evalúan esas tres configuraciones;
+no se aplican filtros pasa altas.
+
+Para cada imagen se cargan la referencia y la entrada
+ruidosa guardadas en 4b. Se comprueba que sean matrices
+del mismo tamaño, con valores en $[0,1]$ y dimensiones
+que sean potencias de dos.
+
+El filtro calcula la FFT bidimensional propia, centra
+el espectro, lo multiplica por una máscara y reconstruye
+la imagen con la FFT inversa propia.
+
+La máscara ideal es
+
+\begin{equation}
+ H_{f_c}(u,v)
+ =
+ \begin{cases}
+ 1, & r(u,v)\leq f_c,\\
+ 0, & r(u,v)>f_c.
+ \end{cases}
+\end{equation}
+
+El radio está normalizado desde el centro del espectro:
+$r=0$ representa la frecuencia cero y $r=1$ corresponde
+a la esquina.
+
+Para una imagen de alto $H$ y ancho $W$, se usa
+
+\begin{equation}
+ r(u,v)
+ =
+ \frac{1}{\sqrt{2}}
+ \sqrt{
+    \left(\frac{u-H/2}{H/2}\right)^2
+    +
+    \left(\frac{v-W/2}{W/2}\right)^2
+ }.
+\end{equation}
+
+La salida se obtiene tomando la parte real de la
+transformada inversa y limitándola a $[0,1]$.
+
+No se introduce relleno adicional ni se cambia el tamaño
+en esta etapa. Los resultados se conservan en
+\texttt{resultados\_fft\_4c} y en
+\path{resultados/fft/}, con un archivo \texttt{.npy}
+por imagen y por corte.
+
+\begin{lstlisting}
+#filtro pasa bajas ideal con la FFT propia
+for fc in FC_4C:
+    resultado = filtro_pasabajas(ruidosa, fc, tipo="ideal")
+\end{lstlisting}
+
+El corte 0.15 reduce más las frecuencias altas, pero
+también borra contornos y texturas. El corte 0.22 ofrece
+el mejor equilibrio entre reducción de ruido y
+conservación de información entre los tres valores probados.
+
+El corte 0.96 deja pasar casi todo el espectro y produce
+una salida muy próxima a la entrada ruidosa.
+
+Como el ruido y los detalles finos comparten frecuencias
+altas, el pasa bajas no puede eliminarlos de manera
+independiente. El corte abrupto de la máscara también
+puede producir oscilaciones cerca de los bordes.
+
+\comparacionescnn{4c}{fft_comparacion}{
+    Limpieza con FFT de las cuatro imágenes. Cada fila
+    muestra la referencia, la entrada ruidosa y las
+    salidas de los cortes 0.15, 0.22 y 0.96,
+    en ese orden.
+}
+
+\evidenciacnn{4c}{3}{
+    La asistencia se utilizó para aplicar las funciones
+    de FFT existentes a las entradas de 4b, probar los
+    tres cortes y guardar las salidas sin alterar el
+    núcleo compartido ni regenerar el ruido.
+}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 4d. Limpieza mediante la CNN}
+
+\paragraph{Instrucción.}
+
+Aplicar el filtro basado en IA a la misma imagen con ruido
+utilizada para la FFT.
+
+\paragraph{Respuesta y explicación del código.}
+
+Se reutiliza la instancia de DnCNN cargada en 4a y se leen
+los mismos archivos \texttt{.npy} de 4b.
+
+Antes de procesar las imágenes, el código comprueba que
+el modelo esté disponible y que las referencias y las
+entradas ruidosas existan. Se verifican sus dimensiones,
+su rango y sus valores finitos.
+
+La entrada se convierte a \texttt{float32}, se organiza
+como un tensor de un elemento y un canal y se envía al
+dispositivo del modelo.
+
+La inferencia se realiza con la red en modo de evaluación,
+sin entrenamiento. En este inciso se llama directamente
+al modelo para conservar también la salida anterior al
+recorte.
+
+Se guardan dos arreglos por imagen: la salida cruda y la
+restaurada limitada a $[0,1]$, en
+\path{resultados/dncnn/}. La comparación de 5 utiliza la
+salida restaurada.
+
+La tabla \path{resumen_4d.csv} registra las dimensiones
+y el archivo de entrada empleado.
+
+\begin{lstlisting}
+#inferencia con el modelo cargado en 4a
+with torch.inference_mode():
+    salida = modelo_dncnn_4a(entrada)
+
+#salida cruda y restauracion limitada al rango valido
+salida_cruda = salida[0, 0].cpu().numpy()
+resultado = np.clip(salida_cruda, 0, 1)
+\end{lstlisting}
+
+La CNN reduce el granulado visible y conserva mejor las
+formas y varios contornos que el pasa bajas. Esto no
+implica una recuperación perfecta: algunas texturas
+pequeñas pueden suavizarse.
+
+A diferencia de una máscara fija en frecuencia, la red
+utiliza el contexto espacial de la entrada para estimar
+el residuo que debe retirar.
+
+Las imágenes de la figura \ref{fig:cnn-4d} permiten
+comparar este efecto con la referencia conocida.
+
+\comparacionesdncnn
+
+\evidenciacnn{4d}{4}{
+    La asistencia se utilizó para reutilizar el modelo
+    preentrenado, aplicar la inferencia a las mismas
+    entradas de FFT y conservar las salidas crudas y
+    restauradas para comprobar el procedimiento.
+}
+
+\FloatBarrier
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Inciso 5. Comparación de los resultados}
+
+\paragraph{Instrucción.}
+
+Indicar cuál filtro funcionó mejor, justificar la respuesta
+mediante las imágenes resultantes y explicar cómo la IA
+puede superar a filtros clásicos al aprender características
+de una imagen limpia.
+
+\paragraph{Procedimiento de comparación.}
+
+Se cargan las referencias de 4b, las tres salidas FFT de 4c
+y las salidas DnCNN de 4d. Se incluye la entrada sin filtrar
+para medir si la restauración mejora el punto de partida.
+
+La función \texttt{medir\_error} utiliza
+\texttt{scikit-image} para calcular MSE, PSNR y SSIM
+con rango de datos igual a uno.
+
+Se verifica que cada resultado tenga las mismas dimensiones
+que la referencia. No se ajusta el contraste individualmente
+ni se retiran bordes o rellenos en este cálculo.
+
+El error cuadrático medio y el PSNR se definen como
+
+\begin{align}
+ \operatorname{MSE}(x,\widehat{x})
+ &=
+ \frac{1}{HW}
+ \sum_{i=1}^{H}
+ \sum_{j=1}^{W}
+ (x_{ij}-\widehat{x}_{ij})^2,
+ \\
+ \operatorname{PSNR}(x,\widehat{x})
+ &=
+ 10\log_{10}\!
+ \left(
+    \frac{1}{\operatorname{MSE}(x,\widehat{x})}
+ \right).
+\end{align}
+
+Un MSE menor indica menor error; un PSNR mayor indica mayor
+cercanía bajo ese criterio.
+
+SSIM evalúa la similitud estructural mediante estadísticas
+locales de luminancia, contraste y estructura; se interpreta
+como mejor una puntuación mayor.
+
+El código emplea su configuración predeterminada y comprueba
+que las dimensiones sean de al menos siete píxeles.
+
+Se selecciona la mejor FFT por PSNR y por SSIM de forma
+separada usando la referencia conocida. En estos resultados
+ambos criterios eligen $f_c=0.22$ para las cuatro imágenes.
+
+Esta selección es retrospectiva entre los tres cortes
+probados; no constituye una regla automática para imágenes
+nuevas. Las figuras muestran la FFT elegida por PSNR.
+
+\paragraph{Respuesta: ¿cuál filtro funcionó mejor?}
+
+\textbf{DnCNN obtuvo el mejor resultado en las cuatro
+imágenes}: presentó mayor PSNR y SSIM que las configuraciones
+FFT evaluadas.
+
+La tabla \ref{tab:cnn-psnr} muestra el PSNR de cada imagen
+y la tabla \ref{tab:cnn-ssim} muestra la comparación
+estructural.
+
+\begin{table}[H]
+\centering
+
+\caption{
+    PSNR por imagen, en dB.
+    La mejor FFT corresponde a $f_c=0.22$.
+}
+\label{tab:cnn-psnr}
+
+\begin{tabular}{lrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & Con ruido & Mejor FFT & DnCNN\\
+\hline
+img1 & 20.70 & 22.69 & \textbf{28.20}\\
+img2 & 20.29 & 24.66 & \textbf{29.26}\\
+img3 & 20.40 & 25.34 & \textbf{31.53}\\
+img4 & 20.28 & 24.31 & \textbf{30.81}\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+
+\caption{
+    SSIM por imagen. Un valor mayor representa mayor
+    similitud estructural.
+}
+\label{tab:cnn-ssim}
+
+\begin{tabular}{lrrr}
+\hline
+\rowcolor{pastelblue}
+Imagen & Con ruido & Mejor FFT & DnCNN\\
+\hline
+img1 & 0.4953 & 0.6451 & \textbf{0.8311}\\
+img2 & 0.4394 & 0.7053 & \textbf{0.8673}\\
+img3 & 0.4137 & 0.7540 & \textbf{0.9206}\\
+img4 & 0.4322 & 0.6481 & \textbf{0.8758}\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+
+\caption{Promedios de las métricas para las cuatro imágenes.}
+\label{tab:cnn-promedios}
+
+\begin{tabular}{lrrr}
+\hline
+\rowcolor{pastelblue}
+Método & MSE & PSNR (dB) & SSIM\\
+\hline
+Sin filtrar
+    & 0.009097 & 20.41 & 0.4452\\
+FFT pasa bajas (0.15)
+    & 0.005433 & 22.80 & 0.6271\\
+FFT pasa bajas (0.22)
+    & 0.003856 & 24.25 & 0.6881\\
+FFT pasa bajas (0.96)
+    & 0.009058 & 20.43 & 0.4458\\
+DnCNN
+    & \textbf{0.001058}
+    & \textbf{29.95}
+    & \textbf{0.8737}\\
+\hline
+\end{tabular}
+\end{table}
+
+En promedio, DnCNN supera en aproximadamente $5.70$ dB al
+mejor corte FFT, calculando la diferencia entre los
+promedios de PSNR. También obtiene un MSE menor y un
+SSIM mayor.
+
+Los promedios de PSNR se calculan sobre los valores
+individuales en dB; no son el PSNR obtenido a partir del
+MSE promedio.
+
+Las tablas se obtienen de \path{resumen_5.csv} y
+\path{promedios_5.csv}, y el detalle completo está en
+\path{metricas_5.csv}, dentro de
+\path{resultados/comparacion/}.
+
+\paragraph{¿Por qué puede funcionar mejor una CNN?}
+
+El pasa bajas elimina frecuencias según una máscara fija,
+independientemente del contenido local. Así reduce ruido,
+pero también descarta componentes que describen bordes y
+texturas.
+
+DnCNN utiliza filtros aprendidos previamente y varias capas
+que combinan información del entorno de cada píxel para
+estimar el ruido.
+
+En la figura \ref{fig:cnn-5} se observa una mayor
+conservación de los contornos junto con una reducción del
+granulado.
+
+La red no aprende con estas cuatro imágenes: aquí se usan
+los pesos que ya fueron entrenados por sus autores.
+
+\paragraph{Alcance de la conclusión.}
+
+La ventaja observada corresponde a estas cuatro referencias
+de $256\times256$, al ruido gaussiano con
+$\sigma=25/255$ seguido de recorte y a los tres filtros
+pasa bajas ideales considerados.
+
+No demuestra que DnCNN supere a cualquier filtro clásico
+ni a todos los tipos de ruido.
+
+Además, el mismo patrón aleatorio se reutiliza por imagen
+y la mejor FFT se elige conociendo la referencia. Las
+métricas cuantifican semejanza con esa referencia, pero no
+garantizan que se conserve cada detalle visual.
+
+\comparacionescnn{5}{comparacion}{
+    Comparación final. De izquierda a derecha:
+    referencia, entrada con ruido, mejor FFT por PSNR
+    ($f_c=0.22$ en todos los casos) y DnCNN.
+    Las cuatro filas corresponden a img1, img2,
+    img3 e img4.
+}
+
+\evidenciacnn{5}{5}{
+    La asistencia se utilizó para organizar la comparación
+    de los métodos, calcular las métricas frente a una
+    referencia común y redactar su interpretación.
+    Los valores de las tablas corresponden a los
+    resultados guardados del experimento, no a cifras
+    propuestas por la IA.
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection*{Conclusión del apartado de CNN}
+
+La comparación permitió relacionar un filtro clásico en
+frecuencia con un modelo de restauración aprendido
+previamente.
+
+Ambos métodos redujeron el ruido con configuraciones
+adecuadas, pero DnCNN obtuvo los mejores valores de las
+tres métricas y conservó mejor los contornos en este
+experimento.
+
+El almacenamiento de las mismas entradas para ambos
+métodos y de las salidas numéricas permitió verificar la
+comparación. Las figuras y las métricas respaldan la
+conclusión dentro del alcance descrito.
+
+\paragraph{Organización de las salidas.}
+
+Los PNG individuales y las figuras comparativas se guardan
+únicamente dentro de \path{imagenes/Figuras/CNN/}, en las
+subcarpetas \path{4a/}, \path{4b/}, \path{4c/},
+\path{4d/} y \path{5/}.
+
+Los PNG individuales conservan las dimensiones de la imagen
+procesada y no incluyen títulos ni ejes. Las figuras
+comparativas sí incluyen los títulos para interpretar
+el experimento.
+
+Además, se conservan los arreglos numéricos
+\texttt{.npy} en \path{resultados/}; estos archivos
+permiten calcular las métricas sin depender de la
+cuantización o del diseño de los PNG.
+
+% Si hubo mas de una consulta en un inciso,
+% agregar todas sus evidencias:
+%
+% \capturacnn{4a_prompt_02.png}{
+%     Segundo prompt del inciso 4a
+% }
+%
+% \capturacnn{4a_respuesta_02.png}{
+%     Segunda respuesta del inciso 4a
+% }
+%
+% Agregar debajo la explicacion de como se utilizo
+% cada respuesta adicional.
+
+% FIN DEL APARTADO DE MARIA CLAUDIA LAINFIESTA HERRERA
+
+\clearpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\logouniversidad
+
+\begin{center}
+\Large
+\textbf{Referencias}
+\end{center}
+
+\begin{itemize}
+
+    \item Google Colab.
+    Integración con modelos de IA.
+    \url{https://colab.research.google.com/}.
+
+    \item Notas de clase,
+    Portal de Matemática VI en GES.
+
+    \item ChatGPT,
+    Respuestas generadas por IA,
+    ChatGPT, 2026.
+    \url{https://chatgpt.com/}.
+
+    \item OpenAI Codex,
+    Respuestas generadas por IA (conversación de la Parte 1),
+    OpenAI, 2026.
+
+    \item Claude,
+    Respuestas generadas por IA,
+    Claude, 2026.
+    \url{https://claude.com/es}.
+
+    \item Departamento de Matemática Aplicada,
+    Matemática 6, FISICC.
+    \textit{MAP: Serie de Fourier Truncada y FFT}.
+    Guía del proyecto, semestre 6, 2026,
+    pp. 4--5.
+
+    \item Zhang, K., Zuo, W., Chen, Y.,
+    Meng, D. y Zhang, L.
+    \textit{
+        Beyond a Gaussian Denoiser:
+        Residual Learning of Deep CNN for Image Denoising
+    }.
+    IEEE Transactions on Image Processing,
+    26(7), 3142--3155, 2017.
+    \url{https://arxiv.org/abs/1608.03981}.
+
+    \item Zhang, K.
+    \textit{
+        KAIR: implementación de DnCNN
+        y pesos preentrenados
+    }.
+    \url{https://github.com/cszn/KAIR/blob/master/models/network_dncnn.py}.
+    Publicación de pesos v1.0:
+    \url{https://github.com/cszn/KAIR/releases/tag/v1.0}.
+
+    \item Cooley, J. W. y Tukey, J. W.
+    An algorithm for the machine calculation of complex Fourier series.
+    \textit{Mathematics of Computation}, 19(90), 297--301, 1965.
+
+    \item Gonzalez, R. C. y Woods, R. E.
+    \textit{Digital Image Processing}. Pearson, 4a. edición, 2018.
+
+    \item Virtanen, P. et al.
+    SciPy 1.0: fundamental algorithms for scientific computing in Python.
+    \textit{Nature Methods}, 17, 261--272, 2020.
+
+    \item Archivos del experimento:
+    \path{MAP_final.ipynb} (notebook entregado para ambas partes),
+    \path{resumen_5.csv},
+    \path{promedios_5.csv} y
+    \path{metricas_5.csv}.
+
+\end{itemize}
+
+\end{document}
